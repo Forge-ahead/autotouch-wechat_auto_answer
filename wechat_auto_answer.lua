@@ -44,7 +44,7 @@ local AUTO_LAUNCH_ON_BOOT  = true                   -- true=首次运行时注�
 local DEBUG                = true                   -- 输出详细日志；检测到来电时截图存证
 local IDENTIFY_APP_MODE    = false                  -- true=循环显示当前前台 App 的 Bundle ID（用于查找 App ID）
 local VERSION              = 1                      -- 当前脚本版本号（整数）。发新版时 +1，并同步更新服务器上的 version.txt
-local UPDATE_BASE_URL      = ""                      -- 更新源目录地址（末尾带 /）。留空=关闭更新功能。示例："https://你的域名/autotouch/"
+local UPDATE_BASE_URL      = "https://raw.githubusercontent.com/Forge-ahead/autotouch-wechat_auto_answer/main/"  -- 更新源目录地址（末尾带 /）。留空=关闭更新功能
 local CHECK_ON_STARTUP     = true                   -- true=脚本启动时也检查一次更新（方便验证新版）
 local HEALTH_GRACE_S       = 60                     -- 启动后连续正常运行多少秒算"健康运行"（用于失败自动回退判定）
 local SCRIPT_NAME          = "wechat_auto_answer.lua"  -- 本脚本文件名（更新覆盖/回退备份用）
@@ -326,9 +326,9 @@ local function checkForUpdate()
     end
 
     log("[update] 发现新版本 v" .. tostring(remoteVer) .. "（当前 v" .. tostring(VERSION) .. "），开始下载")
-    local code = httpGet(UPDATE_BASE_URL .. scriptName)
+    local code = httpGet(UPDATE_BASE_URL .. SCRIPT_NAME)
     if not code then
-        log("[update] 下载新脚本失败: " .. UPDATE_BASE_URL .. scriptName)
+        log("[update] 下载新脚本失败: " .. UPDATE_BASE_URL .. SCRIPT_NAME)
         return
     end
 
@@ -348,16 +348,16 @@ local function checkForUpdate()
     end
 
     -- 备份旧版
-    if not copyFile(dir .. "/" .. scriptName, bakPath) then
+    if not copyFile(dir .. "/" .. SCRIPT_NAME, bakPath) then
         log("[update] 备份旧版失败，放弃更新")
         os.remove(tmpPath)
         return
     end
 
     -- 覆盖（优先原子重命名，失败则复制覆盖）
-    local renamed = pcall(os.rename, tmpPath, dir .. "/" .. scriptName)
+    local renamed = pcall(os.rename, tmpPath, dir .. "/" .. SCRIPT_NAME)
     if not renamed then
-        if not copyFile(tmpPath, dir .. "/" .. scriptName) then
+        if not copyFile(tmpPath, dir .. "/" .. SCRIPT_NAME) then
             log("[update] 覆盖新脚本失败，请检查权限")
             os.remove(tmpPath)
             return
